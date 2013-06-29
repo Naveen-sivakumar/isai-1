@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.List;
  
@@ -57,13 +58,13 @@ public class FileUploadServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
      
 		  
 		// TODO Auto-generated method stub
 		 // checks if the request actually contains upload file
 	
-/*
+
 	if (!ServletFileUpload.isMultipartContent(request)) {
             // if not, we stop here
             PrintWriter writer = response.getWriter();
@@ -71,7 +72,7 @@ public class FileUploadServlet extends HttpServlet {
             writer.flush();
             return;
         }
-*/
+
         // configures upload settings
         DiskFileItemFactory factory = new DiskFileItemFactory();
         // sets memory threshold - beyond which files are stored in disk 
@@ -87,51 +88,49 @@ public class FileUploadServlet extends HttpServlet {
         upload.setSizeMax(MAX_REQUEST_SIZE);
                
            // constructs the directory path to store upload file
-       
-
-		  String name = request.getParameter("fname");
-	  	  PrintWriter out = response.getWriter();
-	  	  System.out.println(name);       
-	  	
-  	  
-             String uploadPath = "c://Temp"
-                + File.separator;
-             //FileOutputStream out = new FileOutputStream(new File(path + File.separator
-               //      + uploadPath));
-         
-        // creates the directory if it does not exist
-        File uploadDir = new File(uploadPath+name);
-        if (!uploadDir.exists()) {
-            uploadDir.mkdir();
-        }
- 
+       String uploadPath = "/home/imayam2/public_html/songs/2013"+File.separator;
+               
+            
         try {
             // parses the request's content to extract file data
             @SuppressWarnings("unchecked")
             List<FileItem> formItems = upload.parseRequest(request);
-			//Iterator<FileItem> it = formItems.iterator();
-			
+            
             if (formItems != null && formItems.size() > 0) {
+            	File uploadDir=null;
                 // iterates over form's fields
                 for (FileItem item : formItems) {
+                	System.out.println(item.getSize());
                     // processes only fields that are not form fields
                     if (!item.isFormField()) {
+                    	System.out.println(item.getSize());
                         String fileName = new File(item.getName()).getName();
-                        String filePath = uploadPath + File.separator + fileName;
+                        String filePath = uploadDir + File.separator + fileName;
                         File storeFile = new File(filePath);
-                       
+ System.out.println("File name "+fileName+"Fie Path"+filePath+"Store file is"+storeFile);
                         // saves the file on disk
                         item.write(storeFile);
                         request.setAttribute("message",
-                                "Upload has been done successfully!");
-                      
+                            "Upload has been done successfully!");
+                        break;
                     }
-                }
-            } 
-        }        
+                
+                String name=item.getFieldName();
+            String value=item.getString();
+            System.out.println("name and value"+name+value);
+            uploadDir = new File(uploadPath+value);
+         	System.out.println("uploadDir"+uploadDir);
+             if (!uploadDir.exists()) {
+                 uploadDir.mkdir();
+                    }
+                            }
+            }
+        }
+
         catch (Exception ex) {
-            request.setAttribute("message",
-                    "There was an error: " + ex.getMessage());
+        	System.out.println("Exception"+ex.toString());
+
+
         }
         
        // redirects client to message page
@@ -141,8 +140,3 @@ public class FileUploadServlet extends HttpServlet {
 	}
 	}
 	
-	
-			
-	
-
-
